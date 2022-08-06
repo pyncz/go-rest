@@ -68,7 +68,7 @@ func Create(ctx *gin.Context) {
 
 	// Validate slug
 	var matched Tag
-	err := collection.FindOne(context.TODO(), bson.M{"_id": record.ID}).Decode(&matched)
+	err := collection.FindOne(context.TODO(), bson.M{"slug": record.Slug}).Decode(&matched)
 	if err != mongo.ErrNoDocuments {
 		if err != nil {
 			panic(err)
