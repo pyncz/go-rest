@@ -1,9 +1,9 @@
-package tags
+package items
 
 import "github.com/gin-gonic/gin"
 
-func TagsRoute(router *gin.Engine, base string) {
+func Routes(router *gin.Engine, base string) {
 	router.GET(base+"/", Read)
-	router.GET(base+"/:slug", Find)
+	router.GET(base+"/:id", Find)
 	router.POST(base+"/", Create)
 }

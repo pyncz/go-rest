@@ -1,11 +1,11 @@
 package api
 
 import (
-	"pyncz/go-rest/api/apps/todos"
+	"pyncz/go-rest/api/apps/tasks"
 
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterRoutes(router *gin.Engine, base string) {
-	todos.TodoRoute(router, base+"/todos")
+	tasks.Routes(router, base+"/tasks")
 }
