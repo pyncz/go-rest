@@ -1,9 +1,9 @@
-package todo
+package tags
 
 import "github.com/gin-gonic/gin"
 
-func TodoRoute(router *gin.Engine, base string) {
+func TagsRoute(router *gin.Engine, base string) {
 	router.GET(base+"/", Read)
-	router.GET(base+"/:id", Find)
+	router.GET(base+"/:slug", Find)
 	router.POST(base+"/", Create)
 }
