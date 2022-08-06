@@ -2,12 +2,13 @@ package items
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"pyncz/go-rest/utils"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Controllers
@@ -33,30 +34,32 @@ func Create(ctx *gin.Context) {
 	var record Item
 
 	if err := ctx.BindJSON(&record); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-
-	// TODO: Check if need to validate ID
 
 	inserted, err := collection.InsertOne(context.TODO(), record)
 	if err != nil {
 		panic(err)
 	}
 
-	ctx.JSON(http.StatusCreated, inserted)
+	var found Item
+	collection.FindOne(context.TODO(), bson.M{"_id": inserted.InsertedID}).Decode(&found)
+	ctx.JSON(http.StatusCreated, found)
 }
 
 func Find(ctx *gin.Context) {
 	collection := utils.DB.Collection("items")
 
-	id, err := strconv.Atoi(ctx.Param("id"))
+	id := ctx.Param("id")
+
+	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Incorrect path param 'id'"})
-		return
+		log.Println("Invalid id")
 	}
 
-	var found bson.M
-	err = collection.FindOne(context.TODO(), id).Decode(&found)
+	var found Item
+	err = collection.FindOne(context.TODO(), bson.M{"_id": objectId}).Decode(&found)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found"})
 		return

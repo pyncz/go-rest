@@ -33,12 +33,13 @@ func Create(ctx *gin.Context) {
 	var record Tag
 
 	if err := ctx.BindJSON(&record); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
 
 	// Validate slug
-	var found bson.M
-	err := collection.FindOne(context.TODO(), record.ID).Decode(&found)
+	var matched Tag
+	err := collection.FindOne(context.TODO(), bson.M{"_id": record.ID}).Decode(&matched)
 	if err != mongo.ErrNoDocuments {
 		if err != nil {
 			panic(err)
@@ -52,6 +53,10 @@ func Create(ctx *gin.Context) {
 		panic(err)
 	}
 
+	var found Tag
+	collection.FindOne(context.TODO(), bson.M{"_id": inserted.InsertedID}).Decode(&found)
+	ctx.JSON(http.StatusCreated, found)
+
 	ctx.JSON(http.StatusCreated, inserted)
 }
 
@@ -60,7 +65,7 @@ func Find(ctx *gin.Context) {
 
 	slug := ctx.Param("slug")
 
-	var found bson.M
+	var found Tag
 	err := collection.FindOne(context.TODO(), bson.M{"slug": slug}).Decode(&found)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found"})

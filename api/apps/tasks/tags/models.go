@@ -3,7 +3,7 @@ package tags
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Tag struct {
-	ID   primitive.ObjectID `bson:"_id,omitempty"`
-	Slug string             `bson:"slug,omitempty"`
-	Name string             `bson:"slug,omitempty"`
+	ID   primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	Slug string             `json:"slug" bson:"slug,omitempty"`
+	Name string             `json:"name" bson:"name,omitempty"`
 }
