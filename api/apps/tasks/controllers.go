@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"pyncz/go-rest/models"
 	"pyncz/go-rest/utils"
@@ -31,10 +30,16 @@ func Read(ctx *gin.Context) {
 
 	var records []Task = []Task{}
 
-	cursor, err := collection.Find(context.TODO(), bson.D{}, &options.FindOptions{
+	filter := bson.D{}
+	count, err := collection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	cursor, err := collection.Find(context.TODO(), filter, &options.FindOptions{
 		Limit: &limit,
 		Skip:  &offset,
 	})
+
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +47,13 @@ func Read(ctx *gin.Context) {
 		panic(err)
 	}
 
-	ctx.JSON(http.StatusOK, records)
+	ctx.JSON(http.StatusOK, models.PaginatedResponse[Task]{
+		Count:   count,
+		Limit:   limit,
+		Offset:  offset,
+		Cursor:  utils.GetNextOffset(offset, count, int64(len(records))),
+		Results: records,
+	})
 }
 
 func Create(ctx *gin.Context) {
@@ -72,7 +83,8 @@ func Find(ctx *gin.Context) {
 
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		log.Println("Invalid id")
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid id"})
+		return
 	}
 
 	var found Task

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"log"
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,7 +12,7 @@ var DB *mongo.Database
 
 func ConnectDb() func() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+		panic("No .env file found")
 	}
 
 	dbUri := GetEnv("MONGODB_URI")
