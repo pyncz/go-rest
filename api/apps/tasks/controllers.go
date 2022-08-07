@@ -35,10 +35,8 @@ func Read(ctx *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	cursor, err := collection.Find(context.TODO(), filter, &options.FindOptions{
-		Limit: &limit,
-		Skip:  &offset,
-	})
+	opts := options.Find().SetLimit(limit).SetSkip(offset)
+	cursor, err := collection.Find(context.TODO(), filter, opts)
 
 	if err != nil {
 		panic(err)
