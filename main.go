@@ -14,7 +14,7 @@ func main() {
 
 	// Add routes
 	router := gin.Default()
-	api.RegisterRoutes(router, "/api/v1")
+	api.Routes(router.Group("/api/v1"))
 
 	router.Run("localhost:9090")
 }

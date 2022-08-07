@@ -6,6 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoutes(router *gin.Engine, base string) {
-	tasks.Routes(router, base+"/tasks")
+func Routes(router *gin.RouterGroup) {
+	tasks.Routes(router.Group("/tasks"))
 }

@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Routes(router *gin.Engine, base string) {
-	router.GET(base+"/", Read)
-	router.GET(base+"/:id", Find)
-	router.POST(base+"/", Create)
+func Routes(router *gin.RouterGroup) {
+	router.GET("/", Read)
+	router.GET("/:id", Find)
+	router.POST("/", Create)
 
 	// Registed sub-domains
-	tags.Routes(router, base+"/tags")
-	items.Routes(router, base+"/items")
+	tags.Routes(router.Group("/tags"))
+	items.Routes(router.Group("/items"))
 }
