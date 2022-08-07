@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -87,8 +88,11 @@ func Find(ctx *gin.Context) {
 
 	var found Task
 	err = collection.FindOne(context.TODO(), bson.M{"_id": objectId}).Decode(&found)
-	if err != nil {
+	if err == mongo.ErrNoDocuments {
 		ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found"})
+		return
+	} else if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
