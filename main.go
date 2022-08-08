@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/gin-gonic/gin"
 
 	"pyncz/go-rest/api"
@@ -16,5 +19,10 @@ func main() {
 	router := gin.Default()
 	api.Routes(router.Group("/api/v1"))
 
-	router.Run("localhost:9090")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "9090"
+	}
+
+	router.Run(fmt.Sprintf("localhost:%s", port))
 }
