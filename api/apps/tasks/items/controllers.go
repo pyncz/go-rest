@@ -45,6 +45,7 @@ func Read(ctx *gin.Context) {
 	if err = cursor.All(context.TODO(), &records); err != nil {
 		panic(err)
 	}
+	defer cursor.Close(context.TODO())
 
 	ctx.JSON(http.StatusOK, models.PaginatedResponse[Item]{
 		Count:   count,
