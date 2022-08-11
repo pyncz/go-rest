@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  web:
+    depends_on:
+      - mongo
+    build:
+      context: .
+      args:
+        EXPOSE_PORT: ${PORT}
+    container_name: api
+    hostname: api
+    networks:
+      - go-rest-net
+    ports:
+      - ${PORT}:${PORT}
+    environment:
+      - PORT
+      - MONGO_CONNECT_STRING=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:${MONGO_PORT}/${MONGO_INITDB_DATABASE}
+      - MONGO_INITDB_DATABASE
+    deploy:
+      restart_policy:
+        condition: on-failure
+  mongo:
+    image: mongo:5.0
+    container_name: mongo
+    hostname: db
+    command: ['--auth']
+    networks:
+      - go-rest-net
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    environment:
+      # creds to init db
+      - MONGO_INITDB_DATABASE
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+      # creds to connect to db
+      - MONGO_INITDB_USERNAME
+      - MONGO_INITDB_PASSWORD
+    volumes:
+      - mongo:/data/db
+      - ./scripts/seed.sh:/docker-entrypoint-initdb.d/seed.sh:ro
+
+volumes:
+  mongo:
+
+networks:
+  go-rest-net:
+    driver: bridge

@@ -5,12 +5,16 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 
 	"pyncz/go-rest/api"
 	"pyncz/go-rest/utils"
 )
 
 func main() {
+	// Try to load .env vars (for dev mode)
+	_ = godotenv.Load()
+
 	// Connect db
 	Disconnect := utils.ConnectDb()
 	defer Disconnect()
@@ -24,5 +28,5 @@ func main() {
 		port = "9090"
 	}
 
-	router.Run(fmt.Sprintf("localhost:%s", port))
+	router.Run(fmt.Sprintf(":%s", port))
 }

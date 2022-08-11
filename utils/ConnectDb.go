@@ -3,22 +3,21 @@ package utils
 import (
 	"context"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// TODO: Use dependency injection instead
 var DB *mongo.Database
 
 func ConnectDb() func() {
-	if err := godotenv.Load(); err != nil {
-		panic("No .env file found")
-	}
+	dbUri := GetEnv("MONGO_CONNECT_STRING")
+	dbName := GetEnv("MONGO_INITDB_DATABASE")
 
-	dbUri := GetEnv("MONGODB_URI")
-	dbName := GetEnv("DB_NAME")
-
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dbUri))
+	client, err := mongo.Connect(
+		context.TODO(),
+		options.Client().ApplyURI(dbUri).SetAppName("api"),
+	)
 	if err != nil {
 		panic(err)
 	}
