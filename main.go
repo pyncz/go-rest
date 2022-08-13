@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"pyncz/go-rest/api"
+	"pyncz/go-rest/models"
 	"pyncz/go-rest/utils"
 )
 
@@ -16,13 +17,17 @@ func main() {
 	_ = godotenv.Load()
 
 	// Connect db
-	Disconnect := utils.ConnectDb()
+	db, Disconnect := utils.ConnectDb()
 	defer Disconnect()
+
+	// Create an instance of Env containing the connection pool.
+	env := &models.AppEnv{DB: db}
 
 	// Add routes
 	router := gin.Default()
-	api.Routes(router.Group("/api/v1"))
+	api.Routes(router.Group("/api/v1"), env)
 
+	// Start server on provided port
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "9090"

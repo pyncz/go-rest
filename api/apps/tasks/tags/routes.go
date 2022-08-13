@@ -1,9 +1,13 @@
 package tags
 
-import "github.com/gin-gonic/gin"
+import (
+	"pyncz/go-rest/models"
 
-func Routes(router *gin.RouterGroup) {
-	router.GET("/", Read)
-	router.GET("/:slug", Find)
-	router.POST("/", Create)
+	"github.com/gin-gonic/gin"
+)
+
+func Routes(router *gin.RouterGroup, env *models.AppEnv) {
+	router.GET("/", Read(env))
+	router.GET("/:slug", Find(env))
+	router.POST("/", Create(env))
 }

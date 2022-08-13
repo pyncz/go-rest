@@ -7,10 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// TODO: Use dependency injection instead
-var DB *mongo.Database
-
-func ConnectDb() func() {
+func ConnectDb() (*mongo.Database, func()) {
 	dbUri := GetEnv("MONGO_CONNECT_STRING")
 	dbName := GetEnv("MONGO_INITDB_DATABASE")
 
@@ -27,7 +24,7 @@ func ConnectDb() func() {
 		}
 	}
 
-	DB = client.Database(dbName)
+	DB := client.Database(dbName)
 
-	return Disconnect
+	return DB, Disconnect
 }
