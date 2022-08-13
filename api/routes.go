@@ -8,5 +8,9 @@ import (
 )
 
 func Routes(router *gin.RouterGroup, env *models.AppEnv) {
+	// System routes
+	router.GET("/ping", Ping(env))
+
+	// Apps
 	tasks.Routes(router.Group("/tasks"), env)
 }
