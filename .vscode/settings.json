@@ -3,5 +3,8 @@
     "activityBar.background": "#50134B",
     "titleBar.activeBackground": "#701B69",
     "titleBar.activeForeground": "#FDF8FD"
+  },
+  "files.associations": {
+    ".env.template": "properties"
   }
 }
