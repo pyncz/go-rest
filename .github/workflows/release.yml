@@ -3,7 +3,7 @@ name: Release tag
 on:
   push:
     tags:
-      - '*'
+      - v*
 
 jobs:
   notify_start:
