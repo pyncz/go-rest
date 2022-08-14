@@ -10,13 +10,17 @@ jobs:
     name: Notify about start releasing
     runs-on: ubuntu-latest
     steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+
       - name: Send telegram message
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            🚀 Creating release for ${{ github.repository }}@${{ github.ref }}...
+            🚀 Creating release for ${{ github.repository }}@${{ steps.get_version.outputs.version }}...
 
   publish:
     name: Publish image on Docker Hub
@@ -120,10 +124,14 @@ jobs:
       - publish
       - changelog
     steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+
       - name: Send telegram message
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            ✨ Release for ${{ github.repository }}@${{ github.ref }} has been created!
+            ✨ Release for ${{ github.repository }}@${{ steps.get_version.outputs.version }} has been created!
