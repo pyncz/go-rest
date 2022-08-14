@@ -10,8 +10,10 @@ jobs:
     name: Create the next semver tag
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
 
       - name: Bump version and push tag
         uses: mathieudutour/github-tag-action@v6.0

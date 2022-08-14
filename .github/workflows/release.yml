@@ -10,8 +10,10 @@ jobs:
     name: Publish image on Docker Hub
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
       
       # Smoke test version
       - name: Install Go
@@ -83,6 +85,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
           fetch-depth: 0
 
       - name: Setup Node.js ${{ matrix.node-version }}
