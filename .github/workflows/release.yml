@@ -1,13 +1,31 @@
-name: Release tag
+name: Release
 
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
 
 jobs:
+  autotag:
+    name: Create the next semver tag
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.bump.outputs.new_tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Bump version and push tag
+        id: bump
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: false
+          default_prerelease_bump: false
+
   publish:
     name: Publish image on Docker Hub
+    needs: autotag
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -77,7 +95,9 @@ jobs:
 
   changelog:
     name: Create GitHub Release with Changelog
-    needs: publish
+    needs:
+      - autotag
+      - publish
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -99,3 +119,4 @@ jobs:
         continue-on-error: true
         env:
           CONVENTIONAL_GITHUB_RELEASER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APP_TAG: ${{needs.autotag.outputs.new_tag}}
