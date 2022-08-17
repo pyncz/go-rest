@@ -20,18 +20,12 @@ func collection(env *models.AppEnv) *mongo.Collection {
 // Controllers
 func Read(env *models.AppEnv) func(*fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
-		limit, err := utils.ExtractInt64Query(ctx.Query("limit"), models.DEFAULT_LIMIT)
-		if err != nil {
-			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-				"message": "Incorrect query param 'limit'",
-			})
+		pagination := &models.PaginationQuery{
+			Limit: models.DEFAULT_LIMIT,
 		}
 
-		offset, err := utils.ExtractInt64Query(ctx.Query("offset"), 0)
-		if err != nil {
-			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
-				"message": "Incorrect query param 'offset'",
-			})
+		if err := ctx.QueryParser(pagination); err != nil {
+			return err
 		}
 
 		var records []Task = []Task{}
@@ -39,24 +33,24 @@ func Read(env *models.AppEnv) func(*fiber.Ctx) error {
 		filter := bson.D{}
 		count, err := collection(env).CountDocuments(context.TODO(), filter)
 		if err != nil {
-			panic(err)
+			return err
 		}
-		opts := options.Find().SetLimit(limit).SetSkip(offset)
+		opts := options.Find().SetLimit(pagination.Limit).SetSkip(pagination.Offset)
 		cursor, err := collection(env).Find(context.TODO(), filter, opts)
 
 		if err != nil {
-			panic(err)
+			return err
 		}
 		if err = cursor.All(context.TODO(), &records); err != nil {
-			panic(err)
+			return err
 		}
 		defer cursor.Close(context.TODO())
 
 		return ctx.Status(http.StatusOK).JSON(models.PaginatedResponse[Task]{
 			Count:   count,
-			Limit:   limit,
-			Offset:  offset,
-			Cursor:  utils.GetNextOffset(offset, count, int64(len(records))),
+			Limit:   pagination.Limit,
+			Offset:  pagination.Offset,
+			Cursor:  utils.GetNextOffset(pagination.Offset, count, int64(len(records))),
 			Results: records,
 		})
 	}
@@ -72,7 +66,7 @@ func Create(env *models.AppEnv) func(*fiber.Ctx) error {
 
 		inserted, err := collection(env).InsertOne(context.TODO(), record)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		var found Task
