@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"pyncz/go-rest/models"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
 // Controllers
-func Ping(env *models.AppEnv) func(*gin.Context) {
-	return func(ctx *gin.Context) {
-		ctx.Status(http.StatusOK)
+func Ping(env *models.AppEnv) func(*fiber.Ctx) error {
+	return func(ctx *fiber.Ctx) error {
+		return ctx.SendStatus(http.StatusOK)
 	}
 }

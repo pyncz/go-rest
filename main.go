@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 
 	"pyncz/go-rest/api"
@@ -31,8 +32,19 @@ func main() {
 	}
 
 	// Add routes
-	router := gin.Default()
-	api.Routes(router.Group("/api/v1"), env)
+	app := fiber.New(fiber.Config{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	})
+
+	app.Static("/", "./public")
+	app.Mount("/api/v1", api.App(env))
+
+	// Last middleware to match anything
+	app.Use(func(ctx *fiber.Ctx) error {
+		return ctx.SendStatus(404)
+	})
 
 	// Start server on provided port
 	port := os.Getenv("PORT")
@@ -40,5 +52,7 @@ func main() {
 		port = "9090"
 	}
 
-	router.Run(fmt.Sprintf(":%s", port))
+	log.Fatal(
+		app.Listen(fmt.Sprintf(":%s", port)),
+	)
 }

@@ -6,7 +6,7 @@ import (
 	"pyncz/go-rest/models"
 	"pyncz/go-rest/utils"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,20 +14,22 @@ import (
 )
 
 // Controllers
-func Read(env *models.AppEnv) func(*gin.Context) {
+func Read(env *models.AppEnv) func(*fiber.Ctx) error {
 	collection := env.DB.Collection("tasks")
 
-	return func(ctx *gin.Context) {
-		limit, err := utils.ExtractInt64Query(ctx, "limit", models.DEFAULT_LIMIT)
+	return func(ctx *fiber.Ctx) error {
+		limit, err := utils.ExtractInt64Query(ctx.Query("limit"), models.DEFAULT_LIMIT)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Incorrect query param 'limit'"})
-			return
+			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
+				"message": "Incorrect query param 'limit'",
+			})
 		}
 
-		offset, err := utils.ExtractInt64Query(ctx, "offset", 0)
+		offset, err := utils.ExtractInt64Query(ctx.Query("offset"), 0)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Incorrect query param 'offset'"})
-			return
+			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{
+				"message": "Incorrect query param 'offset'",
+			})
 		}
 
 		var records []Task = []Task{}
@@ -48,7 +50,7 @@ func Read(env *models.AppEnv) func(*gin.Context) {
 		}
 		defer cursor.Close(context.TODO())
 
-		ctx.JSON(http.StatusOK, models.PaginatedResponse[Task]{
+		return ctx.Status(http.StatusOK).JSON(models.PaginatedResponse[Task]{
 			Count:   count,
 			Limit:   limit,
 			Offset:  offset,
@@ -58,15 +60,14 @@ func Read(env *models.AppEnv) func(*gin.Context) {
 	}
 }
 
-func Create(env *models.AppEnv) func(*gin.Context) {
+func Create(env *models.AppEnv) func(*fiber.Ctx) error {
 	collection := env.DB.Collection("tasks")
 
-	return func(ctx *gin.Context) {
+	return func(ctx *fiber.Ctx) error {
 		var record Task
 
-		if err := ctx.BindJSON(&record); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
+		if err := ctx.BodyParser(&record); err != nil {
+			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": err.Error()})
 		}
 
 		inserted, err := collection.InsertOne(context.TODO(), record)
@@ -76,32 +77,29 @@ func Create(env *models.AppEnv) func(*gin.Context) {
 
 		var found Task
 		collection.FindOne(context.TODO(), bson.M{"_id": inserted.InsertedID}).Decode(&found)
-		ctx.JSON(http.StatusCreated, found)
+		return ctx.Status(http.StatusCreated).JSON(found)
 	}
 }
 
-func Find(env *models.AppEnv) func(*gin.Context) {
+func Find(env *models.AppEnv) func(*fiber.Ctx) error {
 	collection := env.DB.Collection("tasks")
 
-	return func(ctx *gin.Context) {
-		id := ctx.Param("id")
+	return func(ctx *fiber.Ctx) error {
+		id := ctx.Params("id")
 
 		objectId, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid id"})
-			return
+			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Invalid id"})
 		}
 
 		var found Task
 		err = collection.FindOne(context.TODO(), bson.M{"_id": objectId}).Decode(&found)
 		if err == mongo.ErrNoDocuments {
-			ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found"})
-			return
+			return ctx.Status(http.StatusNotFound).JSON(&fiber.Map{"message": "Not found"})
 		} else if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-			return
+			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": err.Error()})
 		}
 
-		ctx.JSON(http.StatusOK, found)
+		return ctx.Status(http.StatusOK).JSON(found)
 	}
 }
