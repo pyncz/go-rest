@@ -13,10 +13,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func collection(env *models.AppEnv) *mongo.Collection {
+	return env.DB.Collection("tasks")
+}
+
 // Controllers
 func Read(env *models.AppEnv) func(*fiber.Ctx) error {
-	collection := env.DB.Collection("tasks")
-
 	return func(ctx *fiber.Ctx) error {
 		limit, err := utils.ExtractInt64Query(ctx.Query("limit"), models.DEFAULT_LIMIT)
 		if err != nil {
@@ -35,12 +37,12 @@ func Read(env *models.AppEnv) func(*fiber.Ctx) error {
 		var records []Task = []Task{}
 
 		filter := bson.D{}
-		count, err := collection.CountDocuments(context.TODO(), filter)
+		count, err := collection(env).CountDocuments(context.TODO(), filter)
 		if err != nil {
 			panic(err)
 		}
 		opts := options.Find().SetLimit(limit).SetSkip(offset)
-		cursor, err := collection.Find(context.TODO(), filter, opts)
+		cursor, err := collection(env).Find(context.TODO(), filter, opts)
 
 		if err != nil {
 			panic(err)
@@ -61,8 +63,6 @@ func Read(env *models.AppEnv) func(*fiber.Ctx) error {
 }
 
 func Create(env *models.AppEnv) func(*fiber.Ctx) error {
-	collection := env.DB.Collection("tasks")
-
 	return func(ctx *fiber.Ctx) error {
 		var record Task
 
@@ -70,20 +70,18 @@ func Create(env *models.AppEnv) func(*fiber.Ctx) error {
 			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": err.Error()})
 		}
 
-		inserted, err := collection.InsertOne(context.TODO(), record)
+		inserted, err := collection(env).InsertOne(context.TODO(), record)
 		if err != nil {
 			panic(err)
 		}
 
 		var found Task
-		collection.FindOne(context.TODO(), bson.M{"_id": inserted.InsertedID}).Decode(&found)
+		collection(env).FindOne(context.TODO(), bson.M{"_id": inserted.InsertedID}).Decode(&found)
 		return ctx.Status(http.StatusCreated).JSON(found)
 	}
 }
 
 func Find(env *models.AppEnv) func(*fiber.Ctx) error {
-	collection := env.DB.Collection("tasks")
-
 	return func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
 
@@ -93,7 +91,7 @@ func Find(env *models.AppEnv) func(*fiber.Ctx) error {
 		}
 
 		var found Task
-		err = collection.FindOne(context.TODO(), bson.M{"_id": objectId}).Decode(&found)
+		err = collection(env).FindOne(context.TODO(), bson.M{"_id": objectId}).Decode(&found)
 		if err == mongo.ErrNoDocuments {
 			return ctx.Status(http.StatusNotFound).JSON(&fiber.Map{"message": "Not found"})
 		} else if err != nil {

@@ -8,7 +8,7 @@ import (
 )
 
 // Controllers
-func Ping(env *models.AppEnv) func(*fiber.Ctx) error {
+func Ping(*models.AppEnv) func(*fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(http.StatusOK)
 	}
