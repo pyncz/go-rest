@@ -10,12 +10,16 @@ jobs:
     name: Create the next semver tag
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
 
       - name: Bump version and push tag
         uses: mathieudutour/github-tag-action@v6.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: false
           default_prerelease_bump: false
+          # Use custom token instead of GITHUB_TOKEN to subsequent workflows
+          # https://stackoverflow.com/questions/67550727/push-event-doesnt-trigger-workflow-on-push-paths-github-actions
+          github_token: ${{ secrets.REPO_ACCESS_TOKEN }}
