@@ -30,7 +30,7 @@ func TestRoutes(t *testing.T) {
 
 	// Mock fiber app
 	app := fiber.New()
-	App(app, nil)
+	app.Mount("/", App(nil))
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
@@ -61,7 +61,7 @@ func TestHealthCheck(t *testing.T) {
 
 	// Mock fiber app
 	app := fiber.New()
-	App(app, nil)
+	app.Mount("/", App(nil))
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
