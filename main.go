@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -20,8 +21,14 @@ func main() {
 	db, Disconnect := utils.ConnectDb()
 	defer Disconnect()
 
+	// Init logger
+	logger := log.New(os.Stdout, "[go-rest] ", log.LstdFlags)
+
 	// Create an instance of Env containing the connection pool.
-	env := &models.AppEnv{DB: db}
+	env := &models.AppEnv{
+		DB:  db,
+		Log: logger,
+	}
 
 	// Add routes
 	router := gin.Default()
