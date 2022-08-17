@@ -1,7 +1,7 @@
-package api
+package api_v1
 
 import (
-	"pyncz/go-rest/api/apps/tasks"
+	"pyncz/go-rest/api/v1/tasks"
 	"pyncz/go-rest/models"
 
 	"github.com/gofiber/fiber/v2"

@@ -1,8 +1,8 @@
 package tasks
 
 import (
-	"pyncz/go-rest/api/apps/tasks/items"
-	"pyncz/go-rest/api/apps/tasks/tags"
+	"pyncz/go-rest/api/v1/tasks/items"
+	"pyncz/go-rest/api/v1/tasks/tags"
 	"pyncz/go-rest/models"
 
 	"github.com/gofiber/fiber/v2"

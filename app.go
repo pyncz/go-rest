@@ -9,7 +9,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 
-	"pyncz/go-rest/api"
+	api_v1 "pyncz/go-rest/api/v1"
+	"pyncz/go-rest/middlewares"
 	"pyncz/go-rest/models"
 	"pyncz/go-rest/utils"
 )
@@ -39,12 +40,9 @@ func main() {
 	})
 
 	app.Static("/", "./public")
-	app.Mount("/api/v1", api.App(env))
+	app.Mount("/api/v1", api_v1.App(env))
 
-	// Last middleware to match anything
-	app.Use(func(ctx *fiber.Ctx) error {
-		return ctx.SendStatus(404)
-	})
+	app.Use(middlewares.NotFound)
 
 	// Start server on provided port
 	port := os.Getenv("PORT")
