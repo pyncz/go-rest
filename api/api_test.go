@@ -5,46 +5,76 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	"gotest.tools/v3/assert"
+	"github.com/gofiber/fiber/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 type TestCase struct {
-	name           string
-	in             *http.Request
-	out            *httptest.ResponseRecorder
+	description    string
+	req            *http.Request
 	expectedStatus int
 	expectedBody   string
+	expectedError  error
 }
 
-func TestPing(t *testing.T) {
+func TestRoutes(t *testing.T) {
 	tests := []TestCase{
 		{
-			name:           "Health Check",
-			in:             httptest.NewRequest("GET", "/", nil),
-			out:            httptest.NewRecorder(),
-			expectedStatus: http.StatusOK,
-			expectedBody:   "",
+			description:    "returns 404 Not Found on unhandled routes",
+			req:            httptest.NewRequest("GET", "/not-found", nil),
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   "Not found",
+			expectedError:  nil,
 		},
 	}
 
+	// Mock fiber app
+	app := fiber.New()
+	App(app, nil)
+
 	for _, test := range tests {
-		test := test
-		t.Run(test.name, func(t *testing.T) {
-			// TODO: Mock DB?
-			handler := Ping(nil)
+		t.Run(test.description, func(t *testing.T) {
+			res, err := app.Test(test.req, -1)
 
-			// Mock gin context
-			ctx, _ := gin.CreateTestContext(test.out)
-			ctx.Request = test.in
-			ctx.Params = []gin.Param{
-				{Key: "limit", Value: "12"},
-			}
+			// Check response error
+			assert.ErrorIsf(t, err, test.expectedError, test.description)
+			assert.Equalf(t, test.expectedStatus, res.StatusCode, test.description)
 
-			handler(ctx)
+			// if err == nil {
+			// 	// If no error, check response as well
+			// 	assert.HTTPBody()
+			// }
+		})
+	}
+}
 
-			assert.Equal(t, test.expectedStatus, test.out.Code)
-			assert.Equal(t, test.expectedBody, test.out.Body.String())
+func TestHealthCheck(t *testing.T) {
+	tests := []TestCase{
+		{
+			description:    "responses with 200 OK on Health Check route",
+			req:            httptest.NewRequest("GET", "/ping", nil),
+			expectedStatus: http.StatusOK,
+			expectedBody:   "",
+			expectedError:  nil,
+		},
+	}
+
+	// Mock fiber app
+	app := fiber.New()
+	App(app, nil)
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			res, err := app.Test(test.req, -1)
+
+			// Check response error
+			assert.ErrorIsf(t, err, test.expectedError, test.description)
+			assert.Equalf(t, test.expectedStatus, res.StatusCode, test.description)
+
+			// if err == nil {
+			// 	// If no error, check response as well
+			// 	assert.HTTPBody()
+			// }
 		})
 	}
 }
