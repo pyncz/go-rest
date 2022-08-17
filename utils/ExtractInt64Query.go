@@ -2,15 +2,12 @@ package utils
 
 import (
 	"strconv"
-
-	"github.com/gin-gonic/gin"
 )
 
-func ExtractInt64Query(ctx *gin.Context, key string, defaults int64) (int64, error) {
-	query := ctx.Query(key)
-	if query == "" {
+func ExtractInt64Query(value string, defaults int64) (int64, error) {
+	if value == "" {
 		return defaults, nil
 	} else {
-		return strconv.ParseInt(query, 10, 64)
+		return strconv.ParseInt(value, 10, 64)
 	}
 }
