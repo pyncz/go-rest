@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"pyncz/go-rest/models"
+	"pyncz/go-rest/utils"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestHealthCheck(t *testing.T) {
@@ -16,7 +16,7 @@ func TestHealthCheck(t *testing.T) {
 			Description:    "responses with 200 OK on Health Check route",
 			Req:            httptest.NewRequest("GET", "/ping", nil),
 			ExpectedStatus: http.StatusOK,
-			ExpectedBody:   "",
+			ExpectedBody:   "OK",
 			ExpectedError:  nil,
 		},
 	}
@@ -25,18 +25,5 @@ func TestHealthCheck(t *testing.T) {
 	app := fiber.New()
 	app.Mount("/", App(nil))
 
-	for _, test := range tests {
-		t.Run(test.Description, func(t *testing.T) {
-			res, err := app.Test(test.Req, -1)
-
-			// Check response error
-			assert.ErrorIsf(t, err, test.ExpectedError, test.Description)
-			assert.Equalf(t, test.ExpectedStatus, res.StatusCode, test.Description)
-
-			// if err == nil {
-			// 	// If no error, check response as well
-			// 	assert.HTTPBody()
-			// }
-		})
-	}
+	utils.TestRequestList(t, app, &tests)
 }
