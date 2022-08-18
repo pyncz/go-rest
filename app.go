@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -49,6 +50,16 @@ func main() {
 	app.Use(middlewares.NotFound)
 	app.Use(limiter.New())
 	app.Use(recover.New())
+
+	// Setup graceful shutdown
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, os.Interrupt)
+
+	go func() {
+		sig := <-signalChannel
+		logger.Printf("Received %s signal, graceful shutdown...", sig)
+		_ = app.Shutdown()
+	}()
 
 	// Start server on provided port
 	port := os.Getenv("PORT")
