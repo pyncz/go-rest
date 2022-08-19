@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
-	"os/signal"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,19 +14,16 @@ import (
 	api_v1 "pyncz/go-rest/api/v1"
 	"pyncz/go-rest/middlewares"
 	"pyncz/go-rest/models"
-	"pyncz/go-rest/utils"
+	"pyncz/go-rest/utils/setup"
 )
 
 func main() {
 	// Try to load .env vars (for dev mode)
 	_ = godotenv.Load()
 
-	// Connect db
-	db, Disconnect := utils.ConnectDb()
+	logger := setup.Logger()
+	db, Disconnect := setup.DB()
 	defer Disconnect()
-
-	// Init logger
-	logger := log.New(os.Stdout, "[go-rest] ", log.LstdFlags)
 
 	// Create an instance of Env containing the connection pool.
 	env := &models.AppEnv{
@@ -51,15 +46,7 @@ func main() {
 	app.Use(limiter.New())
 	app.Use(recover.New())
 
-	// Setup graceful shutdown
-	signalChannel := make(chan os.Signal, 1)
-	signal.Notify(signalChannel, os.Interrupt)
-
-	go func() {
-		sig := <-signalChannel
-		logger.Printf("Received %s signal, graceful shutdown...", sig)
-		_ = app.Shutdown()
-	}()
+	setup.Shutdown(app, env)
 
 	// Start server on provided port
 	port := os.Getenv("PORT")

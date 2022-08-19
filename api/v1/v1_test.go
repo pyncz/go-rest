@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"pyncz/go-rest/models"
-	"pyncz/go-rest/utils"
+	"pyncz/go-rest/utils/test"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -25,5 +25,5 @@ func TestHealthCheck(t *testing.T) {
 	app := fiber.New()
 	app.Mount("/", App(nil))
 
-	utils.TestRequestList(t, app, &tests)
+	test.TestRequestList(t, app, &tests)
 }

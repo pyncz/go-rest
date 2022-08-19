@@ -1,7 +1,8 @@
-package utils
+package test
 
 import (
 	"pyncz/go-rest/models"
+	"pyncz/go-rest/utils"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +18,6 @@ func TestRequest(t *testing.T, app *fiber.App, test *models.TestCase) {
 
 	if err == nil {
 		// If no error, check response as well
-		assert.Equal(t, test.ExpectedBody, GetResponseBody(res))
+		assert.Equal(t, test.ExpectedBody, utils.GetResponseBody(res))
 	}
 }

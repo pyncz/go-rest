@@ -1,4 +1,4 @@
-package utils
+package test
 
 import (
 	"pyncz/go-rest/models"

@@ -19,23 +19,23 @@ func collection(env *models.AppEnv) *mongo.Collection {
 // Controllers
 func Read(env *models.AppEnv) func(*fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
-		pagination := &models.PaginationQuery{
+		pagination := models.PaginationQuery{
 			Limit: models.DEFAULT_LIMIT,
 		}
 
-		if err := ctx.QueryParser(pagination); err != nil {
+		if err := ctx.QueryParser(&pagination); err != nil {
 			return err
 		}
 
-		var records []Tag = []Tag{}
+		var records []Tag
 
 		filter := bson.D{}
-		count, err := collection(env).CountDocuments(context.TODO(), filter)
+		count, err := collection(env).CountDocuments(context.TODO(), &filter)
 		if err != nil {
 			return err
 		}
 		opts := options.Find().SetLimit(pagination.Limit).SetSkip(pagination.Offset)
-		cursor, err := collection(env).Find(context.TODO(), filter, opts)
+		cursor, err := collection(env).Find(context.TODO(), &filter, opts)
 
 		if err != nil {
 			return err
@@ -45,7 +45,7 @@ func Read(env *models.AppEnv) func(*fiber.Ctx) error {
 		}
 		defer cursor.Close(context.TODO())
 
-		return ctx.Status(http.StatusOK).JSON(models.PaginatedResponse[Tag]{
+		return ctx.Status(http.StatusOK).JSON(&models.PaginatedListResults[Tag]{
 			Count:   count,
 			Limit:   pagination.Limit,
 			Offset:  pagination.Offset,
@@ -60,7 +60,7 @@ func Create(env *models.AppEnv) func(*fiber.Ctx) error {
 		var record Tag
 
 		if err := ctx.BodyParser(&record); err != nil {
-			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": err.Error()})
+			return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": err.Error()})
 		}
 
 		// Validate slug
@@ -73,14 +73,14 @@ func Create(env *models.AppEnv) func(*fiber.Ctx) error {
 			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "'slug' is not unique"})
 		}
 
-		inserted, err := collection(env).InsertOne(context.TODO(), record)
+		inserted, err := collection(env).InsertOne(context.TODO(), &record)
 		if err != nil {
 			return err
 		}
 
 		var found Tag
 		collection(env).FindOne(context.TODO(), bson.M{"_id": inserted.InsertedID}).Decode(&found)
-		return ctx.Status(http.StatusCreated).JSON(found)
+		return ctx.Status(http.StatusCreated).JSON(&found)
 	}
 }
 
@@ -96,6 +96,6 @@ func Find(env *models.AppEnv) func(*fiber.Ctx) error {
 			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": err.Error()})
 		}
 
-		return ctx.Status(http.StatusOK).JSON(found)
+		return ctx.Status(http.StatusOK).JSON(&found)
 	}
 }

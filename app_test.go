@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"pyncz/go-rest/middlewares"
 	"pyncz/go-rest/models"
-	"pyncz/go-rest/utils"
+	"pyncz/go-rest/utils/test"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -26,5 +26,5 @@ func TestMiddlewares(t *testing.T) {
 	app := fiber.New()
 	app.Use(middlewares.NotFound)
 
-	utils.TestRequestList(t, app, &tests)
+	test.TestRequestList(t, app, &tests)
 }

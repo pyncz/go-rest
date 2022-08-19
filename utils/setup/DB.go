@@ -1,15 +1,16 @@
-package utils
+package setup
 
 import (
 	"context"
+	"pyncz/go-rest/utils"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectDb() (*mongo.Database, func()) {
-	dbUri := GetEnv("MONGO_CONNECT_STRING")
-	dbName := GetEnv("MONGO_INITDB_DATABASE")
+func DB() (*mongo.Database, func()) {
+	dbUri := utils.GetEnv("MONGO_CONNECT_STRING")
+	dbName := utils.GetEnv("MONGO_INITDB_DATABASE")
 
 	client, err := mongo.Connect(
 		context.TODO(),
@@ -18,13 +19,13 @@ func ConnectDb() (*mongo.Database, func()) {
 	if err != nil {
 		panic(err)
 	}
-	Disconnect := func() {
+	disconnect := func() {
 		if err := client.Disconnect(context.TODO()); err != nil {
 			panic(err)
 		}
 	}
 
-	DB := client.Database(dbName)
+	db := client.Database(dbName)
 
-	return DB, Disconnect
+	return db, disconnect
 }
