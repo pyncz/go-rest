@@ -12,13 +12,12 @@ import (
 )
 
 func TestMiddlewares(t *testing.T) {
-	tests := []models.TestCase{
+	tests := []models.HttpTestCase{
 		{
 			Description:    "returns 404 Not Found on unhandled routes",
 			Req:            httptest.NewRequest("GET", "/not-found", nil),
 			ExpectedStatus: http.StatusNotFound,
 			ExpectedBody:   "Not Found",
-			ExpectedError:  nil,
 		},
 	}
 

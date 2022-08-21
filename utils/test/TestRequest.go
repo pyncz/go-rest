@@ -9,11 +9,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRequest(t *testing.T, app *fiber.App, test *models.TestCase) {
+func TestRequest(t *testing.T, app *fiber.App, test *models.HttpTestCase) {
 	res, err := app.Test(test.Req, -1)
 
 	// Check response error
-	assert.ErrorIs(t, err, test.ExpectedError)
+	assert.Equal(t, test.IfExpectError, err != nil)
+	if test.IfExpectError && test.ExpectedError != nil {
+		assert.ErrorIs(t, test.ExpectedError, err)
+	}
+
+	// Check response status
 	assert.Equal(t, test.ExpectedStatus, res.StatusCode)
 
 	if err == nil {

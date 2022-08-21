@@ -11,13 +11,12 @@ import (
 )
 
 func TestHealthCheck(t *testing.T) {
-	tests := []models.TestCase{
+	tests := []models.HttpTestCase{
 		{
 			Description:    "responses with 200 OK on Health Check route",
 			Req:            httptest.NewRequest("GET", "/ping", nil),
 			ExpectedStatus: http.StatusOK,
 			ExpectedBody:   "OK",
-			ExpectedError:  nil,
 		},
 	}
 

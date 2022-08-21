@@ -64,7 +64,7 @@ func Create(env *models.AppEnv) func(*fiber.Ctx) error {
 			return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": err.Error()})
 		}
 
-		errors := utils.Validate(&record)
+		errors, _ := utils.Validate(&record)
 		if errors != nil {
 			return ctx.Status(http.StatusBadRequest).JSON(&errors)
 		}
