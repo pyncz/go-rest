@@ -14,7 +14,7 @@ import (
 )
 
 type Service[
-	T models.Validatable,
+	T any,
 	TFilters map[string]any,
 	TCreateForm any,
 ] struct {
@@ -26,7 +26,7 @@ type Service[
 }
 
 func NewService[
-	T models.Validatable,
+	T any,
 	TFilters map[string]any,
 	TCreateForm any,
 ](
@@ -126,7 +126,7 @@ func (s *Service[T, _, TCreateForm]) Create(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": err.Error()})
 	}
 
-	errors := record.Validate()
+	errors := utils.Validate(&record)
 	if errors != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(&errors)
 	}
