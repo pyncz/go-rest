@@ -15,15 +15,20 @@ RUN go mod download
 
 # Copy sources
 COPY api ./api
-COPY utils ./utils
+COPY base ./base
+COPY middlewares ./middlewares
 COPY models ./models
+COPY utils ./utils
 COPY main.go ./
+
+# Copy public assets
+COPY public /public
 
 # Copy DB init script
 COPY ./scripts/seed.sh /scripts/seed.sh
 
 # Build binary
-RUN go build -o /bin/go-rest
+RUN go build -o /go-rest
 
 
 ##
@@ -35,9 +40,10 @@ ARG EXPOSE_PORT
 
 WORKDIR /
 
-COPY --from=artifacts /bin/go-rest /bin/go-rest
+COPY --from=artifacts /public /public
+COPY --from=artifacts /go-rest /go-rest
 COPY --from=artifacts /scripts/seed.sh /docker-entrypoint-initdb.d/
 
 EXPOSE $EXPOSE_PORT
 
-ENTRYPOINT [ "/bin/go-rest" ]
+ENTRYPOINT [ "/go-rest" ]
