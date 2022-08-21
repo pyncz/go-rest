@@ -9,9 +9,11 @@ import (
 func App(env *models.AppEnv) *fiber.App {
 	app := fiber.New()
 
-	app.Get("/", Read(env))
-	app.Get("/:slug", Find(env))
-	app.Post("/", Create(env))
+	controller := CreateController(env)
+
+	app.Get("/", controller.ReadPaginated)
+	app.Get("/:slug", controller.FindBySlug)
+	app.Post("/", controller.Create)
 
 	return app
 }

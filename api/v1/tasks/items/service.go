@@ -1,4 +1,4 @@
-package tasks
+package items
 
 import (
 	"pyncz/go-rest/base"
@@ -7,12 +7,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Service = base.Service[Task, TaskFilters, Task, primitive.ObjectID]
+type Service = base.Service[Item, ItemFilters, Item, primitive.ObjectID]
 
 func CreateService(env *models.AppEnv) *Service {
-	return base.CreateService[Task, TaskFilters, Task, primitive.ObjectID](
+	return base.CreateService[Item, ItemFilters, Item, primitive.ObjectID](
 		env,
-		"tasks",
+		"items",
 		"_id",
 	)
 }

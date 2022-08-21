@@ -1,106 +1,107 @@
 package tags
 
 import (
-	"context"
 	"net/http"
 	"pyncz/go-rest/models"
 	"pyncz/go-rest/utils"
 
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func collection(env *models.AppEnv) *mongo.Collection {
-	return env.DB.Collection("tags")
+type Controller struct {
+	Service *Service
 }
 
-// Controllers
-func Read(env *models.AppEnv) func(*fiber.Ctx) error {
-	return func(ctx *fiber.Ctx) error {
-		pagination := models.PaginationQuery{
-			Limit: models.DEFAULT_LIMIT,
-		}
-
-		if err := ctx.QueryParser(&pagination); err != nil {
-			return err
-		}
-
-		var records []Tag
-
-		filter := bson.D{}
-		count, err := collection(env).CountDocuments(context.TODO(), &filter)
-		if err != nil {
-			return err
-		}
-		opts := options.Find().SetLimit(pagination.Limit).SetSkip(pagination.Offset)
-		cursor, err := collection(env).Find(context.TODO(), &filter, opts)
-
-		if err != nil {
-			return err
-		}
-		if err = cursor.All(context.TODO(), &records); err != nil {
-			return err
-		}
-		defer cursor.Close(context.TODO())
-
-		return ctx.Status(http.StatusOK).JSON(&models.PaginatedListResults[Tag]{
-			Count:   count,
-			Limit:   pagination.Limit,
-			Offset:  pagination.Offset,
-			Cursor:  utils.GetNextOffset(pagination.Offset, count, int64(len(records))),
-			Results: records,
-		})
+func CreateController(env *models.AppEnv) *Controller {
+	return &Controller{
+		Service: CreateService(env),
 	}
 }
 
-func Create(env *models.AppEnv) func(*fiber.Ctx) error {
-	return func(ctx *fiber.Ctx) error {
-		var record Tag
+// Methods
 
-		if err := ctx.BodyParser(&record); err != nil {
-			return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": err.Error()})
-		}
+func (c *Controller) Read(ctx *fiber.Ctx) error {
+	// Read filters
+	filters := TagFilters{}
+	if err := ctx.QueryParser(&filters); err != nil {
+		return err
+	}
 
-		errors, _ := utils.Validate(&record)
-		if errors != nil {
-			return ctx.Status(http.StatusBadRequest).JSON(&errors)
-		}
+	records, err := c.Service.Read(&filters)
+	if err != nil {
+		return err
+	}
 
-		// Validate slug
-		var matched Tag
-		err := collection(env).FindOne(context.TODO(), bson.M{"slug": record.Slug}).Decode(&matched)
-		if err != mongo.ErrNoDocuments {
-			if err != nil {
-				return err
-			}
-			return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "'slug' is not unique"})
-		}
+	return ctx.Status(http.StatusOK).JSON(records)
+}
 
-		inserted, err := collection(env).InsertOne(context.TODO(), &record)
+func (c *Controller) ReadPaginated(ctx *fiber.Ctx) error {
+	// Read pagination params
+	pagination := models.PaginationQuery{
+		Limit: models.DEFAULT_LIMIT,
+	}
+	if err := ctx.QueryParser(&pagination); err != nil {
+		return err
+	}
+
+	// Read filters
+	filters := TagFilters{}
+	if err := ctx.QueryParser(&filters); err != nil {
+		return err
+	}
+
+	records, err := c.Service.ReadPaginated(&filters, &pagination)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(http.StatusOK).JSON(records)
+}
+
+func (c *Controller) Create(ctx *fiber.Ctx) error {
+	// Read form
+	var form Tag
+	if err := ctx.BodyParser(&form); err != nil {
+		return ctx.Status(http.StatusUnprocessableEntity).JSON(&fiber.Map{"message": err.Error()})
+	}
+	// Validate form
+	errors, _ := utils.Validate(&form)
+	if errors != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(&errors)
+	}
+
+	// Validate slug: try to find a record with the same slug
+	// TODO: Slugify in order to make the slug unique
+	_, err := c.Service.FindByKey(form.Slug)
+	if err != mongo.ErrNoDocuments {
 		if err != nil {
 			return err
 		}
-
-		var found Tag
-		collection(env).FindOne(context.TODO(), bson.M{"_id": inserted.InsertedID}).Decode(&found)
-		return ctx.Status(http.StatusCreated).JSON(&found)
+		return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "'slug' is not unique"})
 	}
+
+	record, err := c.Service.Create(&form)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Status(http.StatusCreated).JSON(record)
 }
 
-func Find(env *models.AppEnv) func(*fiber.Ctx) error {
-	return func(ctx *fiber.Ctx) error {
-		slug := ctx.Params("slug")
-
-		var found Tag
-		err := collection(env).FindOne(context.TODO(), bson.M{"slug": slug}).Decode(&found)
-		if err == mongo.ErrNoDocuments {
-			return ctx.Status(http.StatusNotFound).JSON(&fiber.Map{"message": "Not found"})
-		} else if err != nil {
-			return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": err.Error()})
-		}
-
-		return ctx.Status(http.StatusOK).JSON(&found)
+func (c *Controller) FindBySlug(ctx *fiber.Ctx) error {
+	// Read URI param
+	slug := ctx.Params("slug")
+	if slug == "" {
+		return ctx.Status(http.StatusBadRequest).JSON(&fiber.Map{"message": "Slug is not provided"})
 	}
+
+	record, err := c.Service.FindByKey(slug)
+	if err == mongo.ErrNoDocuments {
+		return ctx.Status(http.StatusNotFound).JSON(&fiber.Map{"message": "Not found"})
+	} else if err != nil {
+		return ctx.Status(http.StatusInternalServerError).JSON(&fiber.Map{"message": err.Error()})
+	}
+
+	return ctx.Status(http.StatusOK).JSON(record)
 }

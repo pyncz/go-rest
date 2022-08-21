@@ -11,3 +11,5 @@ type Item struct {
 	Description string             `json:"description" bson:"description,omitempty" validate:"max=256"`
 	Estimation  uint8              `json:"estimation" bson:"estimation,omitempty" validate:"required,gte=1,lte=100"`
 }
+
+type ItemFilters struct{}

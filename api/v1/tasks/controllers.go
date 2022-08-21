@@ -1,7 +1,6 @@
 package tasks
 
 import (
-	"log"
 	"net/http"
 	"pyncz/go-rest/models"
 	"pyncz/go-rest/utils"
@@ -12,16 +11,12 @@ import (
 )
 
 type Controller struct {
-	Service *Service[Task, TaskFilters, primitive.ObjectID]
+	Service *Service
 }
 
 func CreateController(env *models.AppEnv) *Controller {
 	return &Controller{
-		Service: CreateService[Task, TaskFilters, primitive.ObjectID](
-			env,
-			"tasks",
-			"_id",
-		),
+		Service: CreateService(env),
 	}
 }
 
@@ -56,9 +51,6 @@ func (c *Controller) ReadPaginated(ctx *fiber.Ctx) error {
 	if err := ctx.QueryParser(&filters); err != nil {
 		return err
 	}
-
-	log.Printf("%#v\n", pagination)
-	log.Printf("%#v\n", filters)
 
 	records, err := c.Service.ReadPaginated(&filters, &pagination)
 	if err != nil {

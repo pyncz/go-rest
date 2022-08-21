@@ -9,3 +9,5 @@ type Tag struct {
 	Name string             `json:"name" bson:"name,omitempty" validate:"required,min=3,max=64"`
 	Slug string             `json:"slug" bson:"slug,omitempty" validate:"required,min=3,max=32"`
 }
+
+type TagFilters struct{}
