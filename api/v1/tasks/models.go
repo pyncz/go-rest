@@ -10,3 +10,5 @@ type Task struct {
 	Completed bool                 `json:"completed" bson:"completed,omitempty"`
 	Tags      []primitive.ObjectID `json:"tags" bson:"tags,omitempty"`
 }
+
+type TaskFilters struct{}

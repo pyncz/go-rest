@@ -11,9 +11,11 @@ import (
 func App(env *models.AppEnv) *fiber.App {
 	app := fiber.New()
 
-	app.Get("/", Read(env))
-	app.Get("/:id", Find(env))
-	app.Post("/", Create(env))
+	controller := CreateController(env)
+
+	app.Get("/", controller.ReadPaginated)
+	app.Get("/:id", controller.FindById)
+	app.Post("/", controller.Create)
 
 	// Register sub-domains
 	app.Mount("/tags", tags.App(env))

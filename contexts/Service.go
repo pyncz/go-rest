@@ -18,8 +18,8 @@ type Service[
 	TFilters map[string]any,
 	TCreateForm any,
 ] struct {
-	CollectionName string
 	Env            *models.AppEnv
+	CollectionName string
 	Paginated      bool
 	KeyParam       string
 	Lookup         string
@@ -45,8 +45,8 @@ func NewService[
 	}
 
 	return &Service[T, TFilters, TCreateForm]{
-		CollectionName: collectionName,
 		Env:            env,
+		CollectionName: collectionName,
 		Paginated:      paginated,
 		KeyParam:       keyParam,
 		Lookup:         lookup,
