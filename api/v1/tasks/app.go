@@ -13,13 +13,13 @@ func App(env *models.AppEnv) *fiber.App {
 
 	controller := CreateController(env)
 
-	app.Get("/", controller.ReadPaginated)
-	app.Get("/:id", controller.FindById)
-	app.Post("/", controller.Create)
-
 	// Register sub-domains
 	app.Mount("/tags", tags.App(env))
 	app.Mount("/items", items.App(env))
+
+	app.Get("/", controller.ReadPaginated)
+	app.Get("/:id", controller.FindById)
+	app.Post("/", controller.Create)
 
 	return app
 }
