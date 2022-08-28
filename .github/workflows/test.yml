@@ -21,6 +21,9 @@ jobs:
       
       - name: Fetch required Go modules
         run:  go mod download
+      
+      - name: Install swagger & build docs
+        run: sh scripts/swagger.sh
 
       - name: Test app
         run: go test -v

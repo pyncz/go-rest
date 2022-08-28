@@ -8,16 +8,10 @@ FROM golang:1.19-alpine AS artifacts
 
 WORKDIR /app
 
-# Setup GO path
-RUN export PATH=$(go env GOPATH)/bin:$PATH
-
 # Download necessary Go modules
 COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
-
-# Install swagger
-RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 # Copy sources
 COPY api ./api
@@ -35,7 +29,7 @@ COPY public /public
 COPY ./scripts/seed.sh /scripts/seed.sh
 
 # Build docs
-RUN	swag init
+RUN	sh scripts/swagger.sh
 
 # Build binary
 RUN go build -o /go-rest

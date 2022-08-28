@@ -35,7 +35,7 @@ stop: # Stop services
 	docker compose stop
 
 refresh: # Pull image, recreate and start containers
-	sh ./scripts/refresh.sh
+	sh scripts/refresh.sh
 
 up: # Create and start containers
 	docker compose up
