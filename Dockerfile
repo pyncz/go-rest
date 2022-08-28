@@ -19,14 +19,10 @@ COPY base ./base
 COPY middlewares ./middlewares
 COPY models ./models
 COPY utils ./utils
-COPY docs ./docs
 COPY main.go ./
 
-# Copy public assets
-COPY public /public
-
-# Copy DB init script
-COPY ./scripts/seed.sh /scripts/seed.sh
+# Copy docs' install-n-build script
+COPY ./scripts/swagger.sh ./scripts/swagger.sh
 
 # Build docs
 RUN	sh scripts/swagger.sh
@@ -36,7 +32,7 @@ RUN go build -o /go-rest
 
 
 ##
-## Build docker image
+## Build final image
 ##
 FROM alpine:latest AS build
 
@@ -44,9 +40,13 @@ ARG EXPOSE_PORT
 
 WORKDIR /
 
-COPY --from=artifacts /public /public
+# Copy public assets
+COPY public /public
+
+# Copy DB init script
+COPY scripts/seed.sh /docker-entrypoint-initdb.d/
+
 COPY --from=artifacts /go-rest /go-rest
-COPY --from=artifacts /scripts/seed.sh /docker-entrypoint-initdb.d/
 
 EXPOSE $EXPOSE_PORT
 
