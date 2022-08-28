@@ -13,7 +13,7 @@ type ListResults[TData any] struct {
 type PaginatedListResults[TData any] struct {
 	Count   int64   `json:"count" bson:"count,omitempty"`
 	Results []TData `json:"results" bson:"results,omitempty"`
-	Cursor  int64   `json:"cursor" bson:"cursor,omitempty"`
+	Cursor  int64   `json:"cursor,omitempty" bson:"cursor,omitempty"`
 	Offset  int64   `json:"offset" bson:"offset,omitempty"`
 	Limit   int64   `json:"limit" bson:"limit,omitempty"`
 }

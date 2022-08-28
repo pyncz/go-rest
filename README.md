@@ -22,6 +22,24 @@ make dev
 > Don't forget to set environment variables via `.env` file in the root dir. See `.env.template` to know what vars are expected.
 
 
+### 📖 Generate swagger docs
+Run this to install swagger generator:
+```sh
+go get -u github.com/swaggo/swag/cmd/swag
+```
+
+To generate docs, run:
+```sh
+make swagi
+```
+
+> **NOTE**
+> Make sure you've added GOPATH to your PATH env variable
+> ```
+> export PATH=$(go env GOPATH)/bin:$PATH
+> ```
+
+
 ## Docker Commands
 
 ### 🔄 Restart containers
