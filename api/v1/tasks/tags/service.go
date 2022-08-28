@@ -5,10 +5,10 @@ import (
 	"pyncz/go-rest/models"
 )
 
-type Service = base.Service[Tag, TagFilters, Tag, string]
+type Service = base.Service[Tag, TagFilters, TagCreateForm, string]
 
 func CreateService(env *models.AppEnv) *Service {
-	return base.CreateService[Tag, TagFilters, Tag, string](
+	return base.CreateService[Tag, TagFilters, TagCreateForm, string](
 		env,
 		"tags",
 		"slug",
