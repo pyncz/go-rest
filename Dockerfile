@@ -19,6 +19,7 @@ COPY base ./base
 COPY middlewares ./middlewares
 COPY models ./models
 COPY utils ./utils
+COPY docs ./docs
 COPY main.go ./
 
 # Copy public assets
@@ -26,6 +27,9 @@ COPY public /public
 
 # Copy DB init script
 COPY ./scripts/seed.sh /scripts/seed.sh
+
+# Build docs
+RUN	sh scripts/swagger.sh
 
 # Build binary
 RUN go build -o /go-rest
