@@ -8,10 +8,16 @@ i: # Install deps
 dev: # Run main service
 	go run .
 
-bin: # Build binaries
-	go build -o .output/bin
+path: # Add go to the path
+	export PATH=$(go env GOPATH)/bin:$PATH
 
-swagi: # Generate 
+bin: # Build binaries
+	go build -o /go-rest
+
+swagi: # Install
+	go install github.com/swaggo/swag/cmd/swag@latest
+
+swagg: # Generate
 	swag init
 
 

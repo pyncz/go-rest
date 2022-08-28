@@ -25,12 +25,12 @@ make dev
 ### 📖 Generate swagger docs
 Run this to install swagger generator:
 ```sh
-go get -u github.com/swaggo/swag/cmd/swag
+make swagi
 ```
 
 To generate docs, run:
 ```sh
-make swagi
+make swagg
 ```
 
 > **NOTE**
