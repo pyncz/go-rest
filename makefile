@@ -11,6 +11,9 @@ dev: # Run main service
 bin: # Build binaries
 	go build -o .output/bin
 
+swagi: # Generate 
+	swag init
+
 
 ##
 ## Docker commands

@@ -1,0 +1,524 @@
+basePath: /api/v1
+definitions:
+  HttpBadRequestError:
+    additionalProperties:
+      type: string
+    type: object
+  HttpError:
+    properties:
+      message:
+        type: string
+    type: object
+  Item:
+    description: Item data
+    properties:
+      description:
+        description: Description of the task item
+        maxLength: 256
+        type: string
+      estimation:
+        description: Estimation points of the task item
+        maximum: 100
+        minimum: 1
+        type: integer
+      id:
+        description: ID in the DB collection
+        type: string
+      task:
+        description: Related task's ID
+        type: string
+      title:
+        description: Title of the task item
+        maxLength: 64
+        minLength: 3
+        type: string
+    required:
+    - estimation
+    - id
+    - task
+    - title
+    type: object
+  ItemCreateForm:
+    description: Task creation model
+    properties:
+      description:
+        description: Description of the task item
+        maxLength: 256
+        type: string
+      estimation:
+        description: Estimation points of the task item
+        maximum: 100
+        minimum: 1
+        type: integer
+      task:
+        description: Related task's ID
+        type: string
+      title:
+        description: Title of the task item
+        maxLength: 64
+        minLength: 3
+        type: string
+    required:
+    - estimation
+    - task
+    - title
+    type: object
+  Tag:
+    description: Tag data
+    properties:
+      id:
+        description: ID in the DB collection
+        type: string
+      name:
+        description: Name of the tag
+        maxLength: 64
+        minLength: 3
+        type: string
+      slug:
+        description: Slug of the tag
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - id
+    - name
+    - slug
+    type: object
+  TagCreateForm:
+    properties:
+      name:
+        description: Name of the tag
+        maxLength: 64
+        minLength: 3
+        type: string
+      slug:
+        description: Slug of the tag
+        maxLength: 32
+        minLength: 3
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  Task:
+    description: Task data
+    properties:
+      completed:
+        description: If the task is completed
+        type: boolean
+      id:
+        description: ID in the DB collection
+        type: string
+      tags:
+        description: Task's related tags' IDs
+        items:
+          type: string
+        type: array
+      title:
+        description: Title of the task
+        maxLength: 64
+        minLength: 3
+        type: string
+    required:
+    - id
+    - title
+    type: object
+  TaskCreateForm:
+    description: Task creation model
+    properties:
+      completed:
+        description: If the task is completed
+        type: boolean
+      tags:
+        description: Task's related tags' IDs
+        items:
+          type: string
+        type: array
+      title:
+        description: Title of the task
+        maxLength: 64
+        minLength: 3
+        type: string
+    required:
+    - title
+    type: object
+  models.PaginatedListResults-Item:
+    properties:
+      count:
+        type: integer
+      cursor:
+        type: integer
+      limit:
+        type: integer
+      offset:
+        type: integer
+      results:
+        items:
+          $ref: '#/definitions/Item'
+        type: array
+    type: object
+  models.PaginatedListResults-Tag:
+    properties:
+      count:
+        type: integer
+      cursor:
+        type: integer
+      limit:
+        type: integer
+      offset:
+        type: integer
+      results:
+        items:
+          $ref: '#/definitions/Tag'
+        type: array
+    type: object
+  models.PaginatedListResults-Task:
+    properties:
+      count:
+        type: integer
+      cursor:
+        type: integer
+      limit:
+        type: integer
+      offset:
+        type: integer
+      results:
+        items:
+          $ref: '#/definitions/Task'
+        type: array
+    type: object
+info:
+  contact:
+    email: pyncz.dev@google.com
+    name: pyncz
+    url: http://github.com/pyncz
+  description: API docs for my GO backend's sandbox
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Go Rest API docs
+  version: "1.0"
+paths:
+  /ping:
+    get:
+      description: Responses with 200 OK if service is available.
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: health check
+      tags:
+      - Health
+  /tasks:
+    get:
+      consumes:
+      - application/json
+      description: Reads a paginated list of the tasks
+      parameters:
+      - default: 0
+        description: Pagination offset
+        in: query
+        name: offset
+        type: integer
+      - default: 12
+        description: Pagination limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedListResults-Task'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: read tasks
+      tags:
+      - Task
+    post:
+      description: Creates a new task from the provided form
+      parameters:
+      - description: Creation form
+        in: body
+        name: form
+        required: true
+        schema:
+          $ref: '#/definitions/TaskCreateForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HttpError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: create task
+      tags:
+      - Task
+  /tasks/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Finds a task by the provided ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HttpBadRequestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/HttpError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: get task by ID
+      tags:
+      - Task
+  /tasks/items:
+    get:
+      consumes:
+      - application/json
+      description: Reads a paginated list of the task items
+      parameters:
+      - default: 0
+        description: Pagination offset
+        in: query
+        name: offset
+        type: integer
+      - default: 12
+        description: Pagination limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedListResults-Item'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: read task items
+      tags:
+      - Item
+    post:
+      description: Creates a new task item from the provided form
+      parameters:
+      - description: Creation form
+        in: body
+        name: form
+        required: true
+        schema:
+          $ref: '#/definitions/ItemCreateForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Item'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HttpError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: create task item
+      tags:
+      - Item
+  /tasks/items/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Finds a task item by the provided ID
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Item'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HttpBadRequestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/HttpError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: get task item by ID
+      tags:
+      - Item
+  /tasks/tags:
+    get:
+      consumes:
+      - application/json
+      description: Reads a paginated list of the tags
+      parameters:
+      - default: 0
+        description: Pagination offset
+        in: query
+        name: offset
+        type: integer
+      - default: 12
+        description: Pagination limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedListResults-Tag'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: read tags
+      tags:
+      - Tag
+    post:
+      description: Creates a new tag from the provided form
+      parameters:
+      - description: Creation form
+        in: body
+        name: form
+        required: true
+        schema:
+          $ref: '#/definitions/TagCreateForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/Tag'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HttpError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: create tag
+      tags:
+      - Tag
+  /tasks/tags/{slug}:
+    get:
+      consumes:
+      - application/json
+      description: Finds a tag by the provided slug
+      parameters:
+      - description: Tag slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/Tag'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HttpBadRequestError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/HttpError'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/HttpError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HttpError'
+      summary: get tag by slug
+      tags:
+      - Tag
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
